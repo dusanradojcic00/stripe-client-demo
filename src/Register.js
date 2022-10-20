@@ -5,6 +5,8 @@ import {Redirect} from 'react-router-dom';
 const Register = (props) => {
   const [email, setEmail] = useState('');
   const [customer, setCustomer] = useState(null);
+  const [secret, setSecret] = useState('');
+  const [data, setData] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,14 +29,28 @@ const Register = (props) => {
       }),
     }).then(r => r.json());
 
-    setCustomer(customer);
+    if (customer) {
+      return <Redirect to={{pathname: '/prices', search: `?customerId=${customer}`}}/>
+    }
   };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const secret = e.target.secret.value;
+
+    const subscriptionData = {
+      clientSecret: secret,
+      subscriptionId: ''
+    }
+
+    setData(subscriptionData)
+  }
 
   const generateEmail = () => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     const charactersLength = characters.length;
     const randomUserName = new Array(8).fill("").map(e => characters.charAt(Math.floor(Math.random() *
-        charactersLength))).join('');
+      charactersLength))).join('');
     return `${randomUserName}@parkerandace.com`;
   }
 
@@ -42,36 +58,51 @@ const Register = (props) => {
     setEmail(generateEmail());
   }, [])
 
-  if(customer) {
-    return <Redirect to={{pathname: '/prices', search: `?customerId=${customer}`}} />
+  if (data) {
+
+
+    return <Redirect to={{
+      pathname: '/subscribe',
+      state: data
+    }} />
   }
 
   return (
-      <main>
-        <h1>Sample Photo Service</h1>
+    <main>
+      <h1>Login or register</h1>
 
-        <img src="https://picsum.photos/280/320?random=4" alt="picsum generated" width="140" height="160" />
+      <form onSubmit={handleSubmit}>
+        <label>
+          Email
+          <input
+            type="text"
+            name="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required/>
+        </label>
 
-        <p>
-          Unlimited photo hosting, and more. Cancel anytime.
-        </p>
+        <button type="submit">
+          Register
+        </button>
+      </form>
 
-        <form onSubmit={handleSubmit}>
-          <label>
-            Email
-            <input
-                type="text"
-                name="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required />
-          </label>
+      <form onSubmit={handleLogin}>
+        <label>
+          Client secret
+          <input
+            type="text"
+            name="secret"
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+            required/>
+        </label>
 
-          <button type="submit">
-            Register
-          </button>
-        </form>
-      </main>
+        <button type="submit">
+          Login
+        </button>
+      </form>
+    </main>
   );
 }
 
